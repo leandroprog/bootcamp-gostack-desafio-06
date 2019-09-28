@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { View } from 'react-native';
 import api from '../../services/api';
 
-// import { Container } from './styles';
+import {
+  Container,
+  Header,
+  Avatar,
+  Name,
+  Bio,
+  Stars,
+  Starred,
+  OwnerAvatar,
+  Info,
+  Title,
+  Author,
+} from './styles';
 
 // eslint-disable-next-line react/prefer-stateless-function
 export default class User extends Component {
@@ -11,12 +22,14 @@ export default class User extends Component {
     title: navigation.getParam('user').name,
   });
 
+  // eslint-disable-next-line react/static-property-placement
   static propTypes = {
     navigation: PropTypes.shape({
       getParam: PropTypes.func,
     }).isRequired,
   };
 
+  // eslint-disable-next-line react/state-in-constructor
   state = {
     stars: [],
   };
@@ -26,10 +39,38 @@ export default class User extends Component {
     const user = navigation.getParam('user');
     const response = await api.get(`/users/${user.login}/starred`);
 
-    this.setState({ stars: response });
+    this.setState({ stars: response.data });
   }
 
   render() {
-    return <View />;
+    const { navigation } = this.props;
+    const { stars } = this.state;
+
+    const user = navigation.getParam('user');
+
+    console.tron.log(stars);
+
+    return (
+      <Container>
+        <Header>
+          <Avatar source={{ uri: user.avatar }} />
+          <Name>{user.name}</Name>
+          <Bio>{user.bio}</Bio>
+        </Header>
+        <Stars
+          data={stars}
+          keyExtractor={star => String(star.id)}
+          renderItem={({ item }) => (
+            <Starred>
+              <OwnerAvatar source={{ uri: item.owner.avatar_url }} />
+              <Info>
+                <Title>{item.name}</Title>
+                <Author>{item.owner.login}</Author>
+              </Info>
+            </Starred>
+          )}
+        />
+      </Container>
+    );
   }
 }
